@@ -1,66 +1,91 @@
-//The following code is about how to make a line following robot
-int l_ir=8;//to use the port number 8 on the digital board side of the UNO to be used as input of left infrared sensor 
-int r_ir=9;//to use the port number 9 on the digital board side of the UNO to be used as input of right infrared sensor 
-int s1=10;//to control the speed of one of the motor in our case it is left side motor
-int s2=11;//to control the speed of right motor
-int lmf=3;//left_motor_forward;ya to ye in1 ya to ye in3 hoga 
-int lmb=4;//left_motot_backward;
-int rmf=5;//right_motor_forward;ya to ye in1 ya to ye in3 hogas
-int rmb=6;//right_motor_backward;
-int speed = 65;//
+// Line Following Robot Code
+
+// IR sensor pins
+int l_ir = 8;  // Left IR sensor connected to digital pin 8
+int r_ir = 9;  // Right IR sensor connected to digital pin 9
+
+// Motor speed control (PWM) pins
+int s1 = 10;   // Speed control for left motor via PWM (connected to ENA of motor driver)
+int s2 = 11;   // Speed control for right motor via PWM (connected to ENB of motor driver)
+
+// Motor control pins
+int lmf = 3;   // Left motor forward (IN1 or IN3 depending on your wiring)
+int lmb = 4;   // Left motor backward (IN2 or IN4)
+int rmf = 5;   // Right motor forward (IN1 or IN3)
+int rmb = 6;   // Right motor backward (IN2 or IN4)
+
+// Speed value (0-255)
+int speed = 65;
+
 void setup() {
-  // put your setup code here, to run once:
-  Serial.begin(9600);
-  pinMode(l_ir,INPUT);//to make the pin with name l_ir to take inputs from user
-  pinMode(r_ir,INPUT);//to make the pin with name r_ir to take inputs from user
-  analogWrite(s1,speed);//to set the speed of one of the motor to the given speed in our case 65 s1 is nothing but port number 10 of the aurdino actually port number 10 is sending an output to the motor controler via function analog write to set the speed with 65 that is value of speed
-  analogWrite(s2,speed);//to set the speed of one of the motor to the given speed in our case 65 s1 is nothing but port number 11 of the aurdino actually port number 11 is sending an output to the motor controler via function analog write to set the speed with 65 that is value of speed
-  pinMode(lmf,OUTPUT);//to make port number lmf of the digital side of UNO as  output  port now when it is output if we give high value from here what actually happens is the left side of the motor would move forward
-  pinMode(lmb,OUTPUT);//to make port number lmb of the digital side of UNO as  output  port now when it is output if we give high value from here what actually happens is the left side of the motor would move backward 
-  pinMode(rmf,OUTPUT);//to make port number rmf of the digital side of UNO as  output  port now when it is output if we give high value from here what actually happens is the right side of the motor would move forward
-  pinMode(rmb,OUTPUT);//to make port number lmf of the digital side of UNO as  output  port now when it is output if we give high value from here what actually happens is the right side of the motor would move backward
+  Serial.begin(9600);  // Initialize serial monitor for debugging
+
+  // Set IR sensor pins as input
+  pinMode(l_ir, INPUT);
+  pinMode(r_ir, INPUT);
+
+  // Set speed of motors using PWM
+  analogWrite(s1, speed);  // Set speed for left motor
+  analogWrite(s2, speed);  // Set speed for right motor
+
+  // Set motor control pins as output
+  pinMode(lmf, OUTPUT);  // Left motor forward pin
+  pinMode(lmb, OUTPUT);  // Left motor backward pin
+  pinMode(rmf, OUTPUT);  // Right motor forward pin
+  pinMode(rmb, OUTPUT);  // Right motor backward pin
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  int l_ir_input = digitalRead(l_ir);//to read the output of the left ir 
-  int r_ir_input = digitalRead(r_ir);//to read the output of the right ir
-  if(l_ir_input == 0 && r_ir_input == 0){
-    //means no obstacle ahead go forward
+  // Read IR sensor values (0 = black line detected, 1 = white surface)
+  int l_ir_input = digitalRead(l_ir);
+  int r_ir_input = digitalRead(r_ir);
+
+  if (l_ir_input == 0 && r_ir_input == 0) {
+    // Both sensors on line → Go forward
     go_forward();
-  }
-  if(l_ir_input == 1 && r_ir_input == 0){
-    //means that there is obstacle in left
+  } 
+  else if (l_ir_input == 1 && r_ir_input == 0) {
+    // Left sensor off line, right sensor on line → Turn right
     go_right();
-  }
-  if(l_ir_input == 0 && r_ir_input == 1){
-    //means that there is obstacle in right
+  } 
+  else if (l_ir_input == 0 && r_ir_input == 1) {
+    // Right sensor off line, left sensor on line → Turn left
     go_left();
-  }
-  if(l_ir_input == 1 && r_ir_input == 1){
+  } 
+  else if (l_ir_input == 1 && r_ir_input == 1) {
+    // Both sensors off line → Stop
     stop();
   }
 }
-void go_forward(){
-  digitalWrite(rmf,HIGH);//when we supply high to this port the motor of the right side would move clockwise making the vehicle move forward
-  digitalWrite(lmf,HIGH);//when we supply high to this port the motor of the left side would move clockwise making the vehicle move forward
-  digitalWrite(rmb,LOW);//when we supply low to this port the motor of the right side would not contradict the previous functions
-  digitalWrite(lmb,LOW);//when we supply low to this port the motor of the left side would not contradict the previous functions
-void stop(){
-  digitalWrite(rmf,LOW);
-  digitalWrite(lmf,LOW);
-  digitalWrite(rmb,LOW);
-  digitalWrite(lmb,LOW);
+
+// Move forward: both motors forward
+void go_forward() {
+  digitalWrite(rmf, HIGH);  // Right motor forward
+  digitalWrite(lmf, HIGH);  // Left motor forward
+  digitalWrite(rmb, LOW);   // Right motor not backward
+  digitalWrite(lmb, LOW);   // Left motor not backward
 }
-void go_right(){
-  digitalWrite(rmf,LOW);
-  digitalWrite(lmf,HIGH);
-  digitalWrite(rmb,HIGH);
-  digitalWrite(lmb,LOW);
+
+// Stop all motors
+void stop() {
+  digitalWrite(rmf, LOW);
+  digitalWrite(lmf, LOW);
+  digitalWrite(rmb, LOW);
+  digitalWrite(lmb, LOW);
 }
-void go_left(){
-  digitalWrite(rmf,HIGH);
-  digitalWrite(lmf,LOW);
-  digitalWrite(rmb,LOW);
-  digitalWrite(lmb,HIGH);
+
+// Turn right: left motor forward, right motor backward
+void go_right() {
+  digitalWrite(rmf, LOW);   // Right motor stop / reverse
+  digitalWrite(rmb, HIGH);  // Right motor backward
+  digitalWrite(lmf, HIGH);  // Left motor forward
+  digitalWrite(lmb, LOW);   // Left motor not backward
+}
+
+// Turn left: right motor forward, left motor backward
+void go_left() {
+  digitalWrite(rmf, HIGH);  // Right motor forward
+  digitalWrite(rmb, LOW);   // Right motor not backward
+  digitalWrite(lmf, LOW);   // Left motor stop / reverse
+  digitalWrite(lmb, HIGH);  // Left motor backward
 }
